@@ -9,7 +9,7 @@ publish: index.html
 	./publish.sh
 .PHONY: publish
 
-index.html:	index.html.template results_database.py
+index.html:	index.html.template result_database.py
 	python build_index.py
 
 %.html:	%.markdown

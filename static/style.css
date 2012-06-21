@@ -1,0 +1,5 @@
+td.win_minimax{background-color: #0A9269;}
+td.win_thought{background-color:#25604E;}
+td.loss_minimax{background-color:#DD5710;}
+td.loss_thought{background-color:#915739;}
+td.loss_exclude_bound{background-color:#732A03;}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Worst-case hangman</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body>
+<h2>Introduction</h2>
+
+<h3>Hangman</h3>
+
+<p>
+Alice and Bob decide to play a game of hangman. Bob thinks of
+of a word which Alice attempts to discover by asking Bob a
+sequence of questions. Both players agree on a dictionary of
+valid words, the number of 'lives' Alice is allowed, and the
+length of Bob's word. The game consists of a number of rounds
+until either Alice or Bob is declared the winner.
+</p>
+
+<p>
+Each round, Alice selects a letter from the set of twenty six
+lower case English letters {a, ..., z} and asks Bob if his
+word contains that letter. If Bob's word does not contain
+the selected letter, he must answer 'no', and Alice loses a
+life. If Alice has no lives remaining the game immediately
+stops and Bob wins the game. If Bob's word does contain the
+letter, he must answers 'yes', and then reveal to Alice the
+positions of all instances of the selected letter in his
+unknown word. Alice immediately wins the game once there is
+only one possibility remaining for Bob's word.
+</p>
+
+<h3>Worst-Case Hangman</h3>
+
+<p>
+The conventional approach to the game of hangman requires
+Bob to fix his word in advance. In this case there is no
+strategy involved on Bob's part during each round of the
+game. The only decision Bob makes during the game is his
+initial word choice.
+</p>
+
+<p>
+However, the rules of the game provide no means of enforcing
+that Bob actually commits to a particular word! Bob is free to
+respond to Alice's queries however he chooses, provided his
+sequence of responses are always consistent with at least one
+possible word of the agreed length from the chosen dictionary.
+</p>
+
+<h3>The Worst-Case Hangman Problem</h3>
+
+<p>
+Assuming Bob does not commit to any particular word until forced,
+and that Alice and Bob both play optimally, who wins the game of
+hangman?
+</p>
+
+<p>
+The outcome of the game depends upon the dictionary of words, the
+length of the unknown word, and Alice's budget of lives.
+</p>
+
+<h3>Solving It</h3>
+
+<h4>Word Dictionary</h4>
+I used <a href="http://www.infochimps.com/datasets/word-list-350000-simple-english-words-excel-readable"> this dataset of over 350,000 English words</a>. To normalise
+the dataset I transformed all the words to lowercase and discarded any word
+that included characters outside of {'a', ..., 'z'}. This resulted in a
+dataset of 351,075 words after discarding duplicate words. Note that some
+of the remaining words are still rather dubious. For example:
+<ol>
+    <li>each individual letter "a", ..., "z" is a word of length 1;</li>
+    <li>there are two seven letter words containing no vowels or 'y's:
+    "pgnttrp" and "tsktsks". The latter <a href="http://en.wiktionary.org/wiki/tsk_tsks">is arguably reasonable</a> while I imagine anyone attempting to play the former word
+during a game of scrabble might get a hard time from the other players.</li>
+</ol>
+Nevertheless, I blithely proceed using this dataset as the standard dictionary
+of words for hangman.
+
+<h4>Adversarial Search</h4>
+The problem can be posed as an adversarial search problem. I use a variety of approaches:
+<ol>
+    <li>Maximum depth minimax search over the game tree</li>
+    <li>Brute force enumeration over Alice's strategies when Bob plays the
+    fixed strategy of answering 'no' to all questions</li>
+    <li>Solving it manually</li>
+</ol>
+
+Some details of the implementation of the minimax search approach:
+<ul>
+    <li>alpha / beta pruning is used to reduce the search space
+        without altering the outcome of the minimax search</li>
+    <li>the game state consists of the set of letters guessed by Alice,
+        the word partially revealed by Bob, and the number of lives remaining
+        for Alice.</li>
+    <li>along with the game state I track the set of all possible words
+        consistent with the information so far revealed by Bob. This
+        is required in order to decide what legal moves Bob has and
+        to tell if Alice has won.</li>
+    <li>the values of every node of the game tree evaluated during the
+        search are cached (see: <a href="http://en.wikipedia.org/wiki/Transposition_table">transposition table</a>).</li>
+    <li>the performance of alpha / beta search depends upon the ordering
+        used when searching possible moves. I use two simple heuristics
+        that are not very smart but are quick to compute:
+        <ul>
+            <li>For Alice's moves I simply pick the first letter of the alphabet
+                that Alice has not yet tried, using the fixed letter ordering
+                "etaonrishdlfcmugypwbvkxjqz" based on letter frequencies;</li>
+            <li>For Bob's moves, I always try the 'no' response first (if this
+                is a valid move), and then the remaining responses in an
+                arbitrary order, if any.</li>
+        </ul>
+</ul>
+
+The second approach of brute-force enumerating over Alice's moves
+cannot solve the problem in general since Bob is restricted to playing
+a fixed strategy that may not be optimal. But in special cases
+where Alice has a sufficiently small number of lives it may provide
+a quick (faster than minimax) demonstration that Alice cannot possibly win.
+
+<h3>Results</h3>
+
+<p>Here's the table of results obtained so far. See below for the key.</p>
+
+$TABLE_OF_RESULTS
+<h4>Key</h4>
+    <table>
+        <thead>
+            <tr><td>Symbol</td><td>Description</td></tr>
+        </thead>
+        <tbody>
+            <tr><td>'W'</td><td>Alice (guessing player) wins</td></tr>
+            <tr><td>'L'</td><td>Alice (guessing player) loses</td></tr>
+            <tr><td>'-'</td><td>no words of this length</td></tr>
+            <tr><td>'?'</td><td>game outcome unknown</td></tr>
+        </tbody>
+    </table>
+</body>
+</html>
